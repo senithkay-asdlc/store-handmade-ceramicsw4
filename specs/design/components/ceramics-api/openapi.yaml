@@ -1,0 +1,562 @@
+openapi: 3.0.3
+info:
+  title: Ceramics API
+  version: 0.1.0
+  description: Catalog, cart, checkout, orders, and admin operations for the handmade-ceramics store.
+servers:
+  - url: /
+security:
+  - bearerAuth: []
+tags:
+  - name: products
+  - name: cart
+  - name: checkout
+  - name: orders
+
+paths:
+  /products:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      operationId: listProducts
+      summary: List products in the catalog
+      tags: [products]
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: category
+          in: query
+          schema: { type: string }
+          description: filter by category
+        - name: search
+          in: query
+          schema: { type: string }
+          description: search by name/description
+        - name: minPrice
+          in: query
+          schema: { type: number }
+        - name: maxPrice
+          in: query
+          schema: { type: number }
+      responses:
+        '200':
+          description: Paginated list of products
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [count, data]
+                properties:
+                  count: { type: integer, description: total matching items }
+                  next: { type: string, nullable: true, description: relative URI of the next page }
+                  previous: { type: string, nullable: true, description: relative URI of the previous page }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Product' }
+        '400':
+          description: invalid query parameters
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    post:
+      operationId: createProduct
+      summary: Create a product (Admin)
+      tags: [products]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductInput' }
+      responses:
+        '201':
+          description: product created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '400':
+          description: invalid product payload
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401':
+          description: missing or invalid token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: caller is not an Admin
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /products/{productId}:
+    parameters:
+      - $ref: '#/components/parameters/ProductId'
+      - $ref: '#/components/parameters/UserId'
+    get:
+      operationId: getProduct
+      summary: Get product details
+      tags: [products]
+      responses:
+        '200':
+          description: product detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '404':
+          description: product not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    put:
+      operationId: updateProduct
+      summary: Update a product (Admin)
+      tags: [products]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductInput' }
+      responses:
+        '200':
+          description: product updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Product' }
+        '400':
+          description: invalid product payload
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '401':
+          description: missing or invalid token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: caller is not an Admin
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: product not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      operationId: deleteProduct
+      summary: Remove a product (Admin)
+      tags: [products]
+      responses:
+        '204':
+          description: product removed
+        '401':
+          description: missing or invalid token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: caller is not an Admin
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: product not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /products/{productId}/inventory:
+    parameters:
+      - $ref: '#/components/parameters/ProductId'
+      - $ref: '#/components/parameters/UserId'
+    get:
+      operationId: getProductInventory
+      summary: Get stock level for a product (Admin)
+      tags: [products]
+      responses:
+        '200':
+          description: inventory level
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InventoryLevel' }
+        '403':
+          description: caller is not an Admin
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: product not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    patch:
+      operationId: updateProductInventory
+      summary: Adjust stock level for a product (Admin)
+      tags: [products]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [stockQuantity]
+              properties:
+                stockQuantity: { type: integer, minimum: 0 }
+      responses:
+        '200':
+          description: inventory updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InventoryLevel' }
+        '400':
+          description: invalid stock value
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: caller is not an Admin
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: product not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /cart:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      operationId: getCart
+      summary: Get the caller's current cart
+      tags: [cart]
+      responses:
+        '200':
+          description: current cart
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+        '401':
+          description: missing or invalid token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /cart/items:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    post:
+      operationId: addCartItem
+      summary: Add a product to the caller's cart
+      tags: [cart]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [productId, quantity]
+              properties:
+                productId: { type: string }
+                quantity: { type: integer, minimum: 1 }
+      responses:
+        '201':
+          description: item added
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+        '400':
+          description: invalid item or insufficient stock
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: product not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /cart/items/{itemId}:
+    parameters:
+      - $ref: '#/components/parameters/ItemId'
+      - $ref: '#/components/parameters/UserId'
+    put:
+      operationId: updateCartItem
+      summary: Update quantity of a cart item
+      tags: [cart]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [quantity]
+              properties:
+                quantity: { type: integer, minimum: 1 }
+      responses:
+        '200':
+          description: cart item updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cart' }
+        '400':
+          description: invalid quantity or insufficient stock
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: cart item not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+    delete:
+      operationId: removeCartItem
+      summary: Remove an item from the cart
+      tags: [cart]
+      responses:
+        '204':
+          description: item removed
+        '404':
+          description: cart item not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /checkout:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    post:
+      operationId: checkout
+      summary: Pay for the current cart and place an order
+      tags: [checkout]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [paymentMethodId, shippingAddress]
+              properties:
+                paymentMethodId: { type: string, description: Stripe payment method id }
+                shippingAddress: { type: string }
+      responses:
+        '201':
+          description: order placed and paid
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '400':
+          description: empty cart, insufficient stock, or invalid payment method
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '402':
+          description: payment declined
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /orders:
+    parameters:
+      - $ref: '#/components/parameters/UserId'
+    get:
+      operationId: listOrders
+      summary: List orders (own orders for a Shopper, all orders for an Admin)
+      tags: [orders]
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: status
+          in: query
+          schema: { type: string }
+          description: filter by fulfillment status
+      responses:
+        '200':
+          description: paginated list of orders
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [count, data]
+                properties:
+                  count: { type: integer, description: total matching items }
+                  next: { type: string, nullable: true, description: relative URI of the next page }
+                  previous: { type: string, nullable: true, description: relative URI of the previous page }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Order' }
+
+  /orders/{orderId}:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+      - $ref: '#/components/parameters/UserId'
+    get:
+      operationId: getOrder
+      summary: Get order details
+      tags: [orders]
+      responses:
+        '200':
+          description: order detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '403':
+          description: caller may not view this order
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: order not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /orders/{orderId}/status:
+    parameters:
+      - $ref: '#/components/parameters/OrderId'
+      - $ref: '#/components/parameters/UserId'
+    patch:
+      operationId: updateOrderStatus
+      summary: Update order fulfillment status (Admin)
+      tags: [orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [processing, shipped, delivered] }
+      responses:
+        '200':
+          description: order status updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Order' }
+        '400':
+          description: invalid status transition
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '403':
+          description: caller is not an Admin
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '404':
+          description: order not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  parameters:
+    UserId:
+      name: X-User-Id
+      in: header
+      required: true
+      description: caller identity injected by the gateway from the validated token
+      schema: { type: string }
+    ProductId:
+      name: productId
+      in: path
+      required: true
+      schema: { type: string }
+    ItemId:
+      name: itemId
+      in: path
+      required: true
+      schema: { type: string }
+    OrderId:
+      name: orderId
+      in: path
+      required: true
+      schema: { type: string }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, default: 20, maximum: 100 }
+    Offset:
+      name: offset
+      in: query
+      schema: { type: integer, default: 0 }
+
+  schemas:
+    Product:
+      type: object
+      required: [id, name, price, stockQuantity]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        price: { type: number }
+        category: { type: string }
+        stockQuantity: { type: integer }
+        imageUrls:
+          type: array
+          items: { type: string }
+    ProductInput:
+      type: object
+      required: [name, price]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        price: { type: number }
+        category: { type: string }
+        stockQuantity: { type: integer }
+        imageUrls:
+          type: array
+          items: { type: string }
+    InventoryLevel:
+      type: object
+      required: [productId, stockQuantity]
+      properties:
+        productId: { type: string }
+        stockQuantity: { type: integer }
+    Cart:
+      type: object
+      required: [id, items]
+      properties:
+        id: { type: string }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/CartItem' }
+    CartItem:
+      type: object
+      required: [id, productId, quantity]
+      properties:
+        id: { type: string }
+        productId: { type: string }
+        quantity: { type: integer }
+    Order:
+      type: object
+      required: [id, status, total, items]
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [processing, shipped, delivered] }
+        total: { type: number }
+        placedAt: { type: string, format: date-time }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItem' }
+    OrderItem:
+      type: object
+      required: [productId, quantity, unitPrice]
+      properties:
+        productId: { type: string }
+        quantity: { type: integer }
+        unitPrice: { type: number }
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: integer, description: HTTP or application error code }
+        message: { type: string, description: short human-readable label }
+        description: { type: string, description: detailed explanation }
+        moreInfo: { type: string, description: URI to documentation }

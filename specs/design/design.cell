@@ -1,0 +1,24 @@
+title Handmade Ceramics Online Store
+
+phase 1
+
+component storefront-webapp as "Ceramics Storefront" web-application [stories: 1, 2, 3, 4, 5, 6, 7, 8, 9]
+component admin-webapp as "Ceramics Admin Portal" web-application [stories: 10, 11, 12]
+component ceramics-api as "Ceramics API" service [stories: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+east user-auth as "Thunder Auth" identity-server
+south payment-provider as "Stripe" service
+south email-provider as "Email Provider" service
+
+north -> storefront-webapp
+north -> admin-webapp
+
+storefront-webapp -> ceramics-api
+storefront-webapp -> user-auth
+
+admin-webapp -> ceramics-api
+admin-webapp -> user-auth
+
+ceramics-api -> user-auth
+ceramics-api -> payment-provider
+ceramics-api -> email-provider

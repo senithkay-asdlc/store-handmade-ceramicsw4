@@ -1,0 +1,37 @@
+{
+  "name": "admin-webapp",
+  "type": "web-application",
+  "version": "0.1.0",
+  "language": "TypeScript",
+  "buildpack": "docker",
+  "appPath": "admin-webapp",
+  "entrypoint": "deployment/web-application",
+  "exposure": "internet",
+  "stories": [
+    10,
+    11,
+    12
+  ],
+  "dependencies": [
+    {
+      "description": "Calls the Ceramics API's admin operations to manage products, inventory, and order fulfillment status.",
+      "kind": "component",
+      "name": "ceramics-api"
+    },
+    {
+      "description": "Thunder-issued OIDC sign-in (PKCE) so only an authenticated Admin can reach the back office.",
+      "kind": "platform-resource",
+      "name": "user-auth",
+      "parameters": {
+        "scopes": "openid profile email"
+      },
+      "resourceType": "thunder-app"
+    }
+  ],
+  "description": "The store-owner back office: a React SPA where a signed-in Admin adds/edits/removes products, tracks and updates inventory levels, and reviews/updates order fulfillment status. It is a distinct surface from the shopper storefront because its user (the store operator) and its lifecycle (internal tooling, not a public shopping flow) differ. It holds no secrets and does not expose any shopper-facing catalog or cart UI.",
+  "skillsPinned": [
+    "wireframes",
+    "react-webapp",
+    "thunder-authentication"
+  ]
+}

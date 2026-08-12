@@ -1,0 +1,117 @@
+{
+  "requirements": [
+    {
+      "id": "REQ-001",
+      "statement": "A shopper can sign in via SSO before browsing and shopping",
+      "stories": [1],
+      "criteria": [
+        { "id": "AC-001-a", "must": "An unauthenticated visitor is redirected to sign in before reaching the storefront", "method": "e2e" },
+        { "id": "AC-001-b", "must": "A shopper who completes sign-in is returned to the storefront as an authenticated user", "method": "e2e" }
+      ]
+    },
+    {
+      "id": "REQ-002",
+      "statement": "A shopper can browse the product catalog of handmade ceramics",
+      "stories": [2],
+      "criteria": [
+        { "id": "AC-002-a", "must": "The catalog page lists available products with name, price, and image", "method": "e2e" },
+        { "id": "AC-002-b", "must": "The catalog list is paginated when the number of products exceeds one page", "method": "e2e" }
+      ]
+    },
+    {
+      "id": "REQ-003",
+      "statement": "A shopper can view a product's details before buying",
+      "stories": [3],
+      "criteria": [
+        { "id": "AC-003-a", "must": "The product detail view shows photos, description, price, and stock availability", "method": "e2e" },
+        { "id": "AC-003-b", "must": "An out-of-stock product is clearly marked and cannot be added to the cart", "method": "e2e" }
+      ]
+    },
+    {
+      "id": "REQ-004",
+      "statement": "A shopper can search and filter the catalog",
+      "stories": [4],
+      "criteria": [
+        { "id": "AC-004-a", "must": "Searching by keyword returns only products whose name or description matches", "method": "e2e" },
+        { "id": "AC-004-b", "must": "Filtering by category returns only products in that category", "method": "e2e" }
+      ]
+    },
+    {
+      "id": "REQ-005",
+      "statement": "A shopper can add products to a cart",
+      "stories": [5],
+      "criteria": [
+        { "id": "AC-005-a", "must": "Adding a product to the cart increases the cart's item count", "method": "e2e" },
+        { "id": "AC-005-b", "must": "Adding a product beyond available stock is rejected", "method": "e2e" }
+      ]
+    },
+    {
+      "id": "REQ-006",
+      "statement": "A shopper can update quantities or remove items from the cart",
+      "stories": [6],
+      "criteria": [
+        { "id": "AC-006-a", "must": "Changing a cart item's quantity updates the cart subtotal", "method": "e2e" },
+        { "id": "AC-006-b", "must": "Removing a cart item takes it out of the cart entirely", "method": "e2e" }
+      ]
+    },
+    {
+      "id": "REQ-007",
+      "statement": "A shopper can check out and pay securely through a payment provider",
+      "stories": [7],
+      "criteria": [
+        { "id": "AC-007-a", "must": "A successful payment places an order and clears the shopper's cart", "method": "e2e" },
+        { "id": "AC-007-b", "must": "A declined payment does not create an order and leaves the cart intact", "method": "e2e" },
+        { "id": "AC-007-c", "must": "Checkout is blocked when the cart is empty", "method": "e2e" }
+      ]
+    },
+    {
+      "id": "REQ-008",
+      "statement": "A shopper receives an email confirmation after placing an order",
+      "stories": [8],
+      "criteria": [
+        { "id": "AC-008-a", "must": "An order-confirmation email is sent after a successful checkout", "method": "e2e" },
+        { "id": "AC-008-b", "must": "The confirmation email content is clear and includes the order details", "method": "manual" }
+      ]
+    },
+    {
+      "id": "REQ-009",
+      "statement": "A shopper can view their past orders and status",
+      "stories": [9],
+      "criteria": [
+        { "id": "AC-009-a", "must": "The order history lists only orders placed by the signed-in shopper", "method": "e2e" },
+        { "id": "AC-009-b", "must": "Each listed order shows its current fulfillment status", "method": "e2e" }
+      ]
+    },
+    {
+      "id": "REQ-010",
+      "statement": "An admin can add, edit, and remove products in the catalog",
+      "stories": [10],
+      "criteria": [
+        { "id": "AC-010-a", "must": "A newly created product appears in the shopper-facing catalog", "method": "e2e" },
+        { "id": "AC-010-b", "must": "An edited product's changes are reflected in its detail view", "method": "e2e" },
+        { "id": "AC-010-c", "must": "A removed product no longer appears in the catalog", "method": "e2e" },
+        { "id": "AC-010-d", "must": "A non-admin caller cannot create, edit, or remove a product", "method": "e2e" }
+      ]
+    },
+    {
+      "id": "REQ-011",
+      "statement": "An admin can track and update inventory levels so out-of-stock products can't be bought",
+      "stories": [11],
+      "criteria": [
+        { "id": "AC-011-a", "must": "An admin can view the current stock quantity for a product", "method": "e2e" },
+        { "id": "AC-011-b", "must": "An admin can update a product's stock quantity", "method": "e2e" },
+        { "id": "AC-011-c", "must": "A product with zero stock cannot be added to a shopper's cart", "method": "e2e" }
+      ]
+    },
+    {
+      "id": "REQ-012",
+      "statement": "An admin can view incoming orders and update their fulfillment status",
+      "stories": [12],
+      "criteria": [
+        { "id": "AC-012-a", "must": "The admin orders view lists all orders across all shoppers", "method": "e2e" },
+        { "id": "AC-012-b", "must": "An admin can change an order's status to processing, shipped, or delivered", "method": "e2e" },
+        { "id": "AC-012-c", "must": "A non-admin caller cannot update an order's fulfillment status", "method": "e2e" }
+      ]
+    }
+  ]
+}

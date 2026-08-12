@@ -1,0 +1,81 @@
+{
+  "name": "ceramics-api",
+  "type": "service",
+  "version": "0.1.0",
+  "language": "Ballerina",
+  "buildpack": "docker",
+  "appPath": "ceramics-api",
+  "entrypoint": "deployment/service",
+  "exposure": "intranet",
+  "stories": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "dependencies": [
+    {
+      "description": "Stores products, inventory levels, carts, orders, and order status history.",
+      "kind": "platform-resource",
+      "name": "ceramics-db",
+      "resourceType": "postgres"
+    },
+    {
+      "description": "Validates the bearer token the gateway forwards and resolves the caller's Shopper/Admin role.",
+      "kind": "platform-resource",
+      "name": "user-auth",
+      "parameters": {
+        "scopes": "openid profile email"
+      },
+      "resourceType": "thunder-app"
+    },
+    {
+      "config": [
+        {
+          "description": "Stripe secret API key used to create and confirm payment intents.",
+          "key": "STRIPE_API_KEY",
+          "secret": true
+        }
+      ],
+      "description": "Charges the shopper's payment method via Stripe's Payment Intents API during checkout.",
+      "kind": "external",
+      "name": "stripe",
+      "specPath": "https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json",
+      "style": "rest-api"
+    },
+    {
+      "candidates": [
+        {
+          "name": "sendgrid",
+          "package": "npm:@sendgrid/mail@^8",
+          "style": "sdk"
+        },
+        {
+          "name": "resend",
+          "package": "npm:resend@^3",
+          "style": "sdk"
+        },
+        {
+          "name": "postmark",
+          "package": "npm:postmark@^4",
+          "style": "sdk"
+        }
+      ],
+      "description": "Sends the order-confirmation email once an order is placed. No signal in the requirements names a provider — tell me which to pin.",
+      "kind": "external",
+      "name": "email-provider"
+    }
+  ],
+  "description": "The single backend service for the store: owns the product catalog, inventory, shopping cart, checkout/payment orchestration (via Stripe), order history, and the admin operations for catalog, inventory, and order-fulfillment management. Exposed only to the two webapps behind the gateway (intranet exposure) — it is not reachable directly from the public internet, and it issues no tokens of its own (Thunder is the IDP).",
+  "endpoint": {
+    "name": "http"
+  }
+}
