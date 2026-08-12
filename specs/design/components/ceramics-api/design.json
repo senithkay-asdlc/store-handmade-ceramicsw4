@@ -21,57 +21,95 @@
     11,
     12
   ],
-  "dependencies": [
-    {
-      "description": "Stores products, inventory levels, carts, orders, and order status history.",
-      "kind": "platform-resource",
-      "name": "ceramics-db",
-      "resourceType": "postgres"
-    },
-    {
-      "description": "Validates the bearer token the gateway forwards and resolves the caller's Shopper/Admin role.",
-      "kind": "platform-resource",
-      "name": "user-auth",
-      "parameters": {
-        "scopes": "openid profile email"
-      },
-      "resourceType": "thunder-app"
-    },
-    {
-      "config": [
-        {
-          "description": "Stripe secret API key used to create and confirm payment intents.",
-          "key": "STRIPE_API_KEY",
-          "secret": true
-        }
-      ],
-      "description": "Charges the shopper's payment method via Stripe's Payment Intents API during checkout.",
-      "kind": "external",
-      "name": "stripe",
-      "specPath": "https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json",
-      "style": "rest-api"
-    },
-    {
-      "config": [
-        {
-          "description": "SendGrid API key used to send transactional emails.",
-          "key": "SENDGRID_API_KEY",
-          "secret": true
-        },
-        {
-          "description": "Verified sender address order-confirmation emails are sent from.",
-          "key": "SENDGRID_FROM_EMAIL"
-        }
-      ],
-      "description": "Sends the order-confirmation email via SendGrid once checkout succeeds.",
-      "kind": "external",
-      "name": "email-provider",
-      "package": "npm:@sendgrid/mail@^8",
-      "style": "sdk"
-    }
-  ],
   "description": "The single backend service for the store: owns the product catalog, inventory, shopping cart, checkout/payment orchestration (via Stripe), order history, and the admin operations for catalog, inventory, and order-fulfillment management. Exposed only to the two webapps behind the gateway (intranet exposure) — it is not reachable directly from the public internet, and it issues no tokens of its own (Thunder is the IDP).",
   "endpoint": {
     "name": "http"
+  },
+  "dependencies": [
+    {
+      "kind": "platform-resource",
+      "name": "ceramics-db",
+      "description": "Stores products, inventory levels, carts, orders, and order status history.",
+      "resourceType": "postgres",
+      "wiring": {
+        "ref": "store-handmade-ce-198984e5",
+        "envBindings": {
+          "adminPassword": "CERAMICS_DB_ADMINPASSWORD",
+          "adminURL": "CERAMICS_DB_ADMINURL",
+          "database": "CERAMICS_DB_DATABASE",
+          "host": "CERAMICS_DB_HOST",
+          "password": "CERAMICS_DB_PASSWORD",
+          "port": "CERAMICS_DB_PORT",
+          "url": "CERAMICS_DB_URL",
+          "username": "CERAMICS_DB_USERNAME"
+        }
+      }
+    },
+    {
+      "kind": "platform-resource",
+      "name": "user-auth",
+      "description": "Validates the bearer token the gateway forwards and resolves the caller's Shopper/Admin role.",
+      "resourceType": "thunder-app",
+      "parameters": {
+        "scopes": "openid profile email"
+      },
+      "wiring": {
+        "ref": "store-handmade-ce-44bb76b7",
+        "envBindings": {
+          "client_id": "USER_AUTH_CLIENT_ID",
+          "issuer": "USER_AUTH_ISSUER",
+          "jwks_url": "USER_AUTH_JWKS_URL",
+          "scopes": "USER_AUTH_SCOPES"
+        }
+      }
+    },
+    {
+      "kind": "external",
+      "name": "stripe",
+      "description": "Charges the shopper's payment method via Stripe's Payment Intents API during checkout.",
+      "style": "rest-api",
+      "specPath": "https://raw.githubusercontent.com/stripe/openapi/master/openapi/spec3.json",
+      "config": [
+        {
+          "key": "STRIPE_API_KEY",
+          "secret": true,
+          "description": "Stripe secret API key used to create and confirm payment intents."
+        }
+      ],
+      "wiring": {
+        "ref": "store-handmade-ce-49cacd6c",
+        "envBindings": {
+          "STRIPE_API_KEY": "STRIPE_API_KEY"
+        }
+      }
+    },
+    {
+      "kind": "external",
+      "name": "email-provider",
+      "description": "Sends the order-confirmation email via SendGrid once checkout succeeds.",
+      "style": "sdk",
+      "package": "npm:@sendgrid/mail@^8",
+      "config": [
+        {
+          "key": "SENDGRID_API_KEY",
+          "secret": true,
+          "description": "SendGrid API key used to send transactional emails."
+        },
+        {
+          "key": "SENDGRID_FROM_EMAIL",
+          "description": "Verified sender address order-confirmation emails are sent from."
+        }
+      ],
+      "wiring": {
+        "ref": "store-handmade-ce-de7fa7ab",
+        "envBindings": {
+          "SENDGRID_API_KEY": "SENDGRID_API_KEY",
+          "SENDGRID_FROM_EMAIL": "SENDGRID_FROM_EMAIL"
+        }
+      }
+    }
+  ],
+  "exposesAPI": {
+    "auth": "end-user-required"
   }
 }

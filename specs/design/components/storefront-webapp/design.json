@@ -18,23 +18,42 @@
     8,
     9
   ],
+  "description": "The customer-facing storefront: a React SPA where a signed-in shopper browses the handmade-ceramics catalog, searches/filters products, manages a cart, checks out, and views their own order history. It holds no server-side state and no secrets — all catalog, cart, order, and payment logic lives behind ceramics-api. It does not expose any admin/catalog-management capability.",
   "dependencies": [
     {
-      "description": "Calls the Ceramics API for the product catalog, cart, checkout, and the shopper's own order history.",
       "kind": "component",
-      "name": "ceramics-api"
+      "name": "ceramics-api",
+      "description": "Calls the Ceramics API for the product catalog, cart, checkout, and the shopper's own order history.",
+      "wiring": {
+        "endpoint": {
+          "component": "store-handmade-ceramicsw4-ceramics-api",
+          "name": "http",
+          "visibility": "project",
+          "envBindings": {
+            "address": "CERAMICS_API_URL"
+          }
+        }
+      }
     },
     {
-      "description": "Thunder-issued OIDC sign-in (PKCE) so a shopper can authenticate before browsing or checking out.",
       "kind": "platform-resource",
       "name": "user-auth",
+      "description": "Thunder-issued OIDC sign-in (PKCE) so a shopper can authenticate before browsing or checking out.",
+      "resourceType": "thunder-app",
       "parameters": {
         "scopes": "openid profile email"
       },
-      "resourceType": "thunder-app"
+      "wiring": {
+        "ref": "store-handmade-ce-44bb76b7",
+        "envBindings": {
+          "client_id": "USER_AUTH_CLIENT_ID",
+          "issuer": "USER_AUTH_ISSUER",
+          "jwks_url": "USER_AUTH_JWKS_URL",
+          "scopes": "USER_AUTH_SCOPES"
+        }
+      }
     }
   ],
-  "description": "The customer-facing storefront: a React SPA where a signed-in shopper browses the handmade-ceramics catalog, searches/filters products, manages a cart, checks out, and views their own order history. It holds no server-side state and no secrets — all catalog, cart, order, and payment logic lives behind ceramics-api. It does not expose any admin/catalog-management capability.",
   "skillsPinned": [
     "wireframes",
     "react-webapp",
