@@ -52,26 +52,22 @@
       "style": "rest-api"
     },
     {
-      "candidates": [
+      "config": [
         {
-          "name": "sendgrid",
-          "package": "npm:@sendgrid/mail@^8",
-          "style": "sdk"
+          "description": "SendGrid API key used to send transactional emails.",
+          "key": "SENDGRID_API_KEY",
+          "secret": true
         },
         {
-          "name": "resend",
-          "package": "npm:resend@^3",
-          "style": "sdk"
-        },
-        {
-          "name": "postmark",
-          "package": "npm:postmark@^4",
-          "style": "sdk"
+          "description": "Verified sender address order-confirmation emails are sent from.",
+          "key": "SENDGRID_FROM_EMAIL"
         }
       ],
-      "description": "Sends the order-confirmation email once an order is placed. No signal in the requirements names a provider — tell me which to pin.",
+      "description": "Sends the order-confirmation email via SendGrid once checkout succeeds.",
       "kind": "external",
-      "name": "email-provider"
+      "name": "email-provider",
+      "package": "npm:@sendgrid/mail@^8",
+      "style": "sdk"
     }
   ],
   "description": "The single backend service for the store: owns the product catalog, inventory, shopping cart, checkout/payment orchestration (via Stripe), order history, and the admin operations for catalog, inventory, and order-fulfillment management. Exposed only to the two webapps behind the gateway (intranet exposure) — it is not reachable directly from the public internet, and it issues no tokens of its own (Thunder is the IDP).",
